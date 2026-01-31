@@ -1,0 +1,22 @@
+{
+  "name": "@kalix/db",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "migrate": "node --loader ts-node/esm src/migrate.ts",
+    "seed": "node --loader ts-node/esm src/seed.ts",
+    "smoke": "node --loader ts-node/esm src/smoke-test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pg": "^8.11.3",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/pg": "^8.11.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

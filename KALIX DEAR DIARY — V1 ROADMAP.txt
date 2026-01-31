@@ -1,0 +1,126 @@
+KALIX DEAR DIARY — V1 ROADMAP
+==============================
+
+Version: 1.0
+Last Updated: January 2026
+
+OVERVIEW
+--------
+Personal diary and task management system with:
+- Telegram bot integration for natural language input
+- n8n workflow automation
+- Web dashboard with analytics
+- PostgreSQL backend on Raspberry Pi
+
+MILESTONE PLAN
+--------------
+
+M0 - REPO SCAFFOLD [COMPLETE]
+  ✓ pnpm monorepo with workspaces
+  ✓ TypeScript configuration
+  ✓ docker-compose for local dev
+  ✓ .env.example with all required vars
+
+M1 - DATABASE [COMPLETE]
+  ✓ PostgreSQL with dear_diary schema
+  ✓ Users, todos, diary_entries, mood_logs tables
+  ✓ Indexes for performance
+  ✓ Triggers for updated_at and word_count
+  ✓ Smoke test script
+
+M2 - API SERVER FOUNDATION [COMPLETE]
+  ✓ Fastify server with TypeScript
+  ✓ Health check endpoint
+  ✓ Database connection pool
+  ✓ Swagger documentation
+
+M3 - AUTHENTICATION [COMPLETE]
+  ✓ JWT auth for web frontend
+  ✓ Service token auth for n8n
+  ✓ User upsert by Telegram ID
+  ✓ Refresh token flow
+  ✓ Login code support
+
+M4 - CRUD ENDPOINTS [COMPLETE]
+  ✓ Todos: create, list, get, update, complete, delete
+  ✓ Diary: create, list, get, delete
+  ✓ Moods: create, list, get, delete
+  ✓ Zod validation on all inputs
+  ✓ User scoping on all queries
+
+M5 - WEBSOCKET [COMPLETE]
+  ✓ /ws endpoint with auth handshake
+  ✓ Command messages: todo.create, todo.update, todo.complete
+  ✓ Command messages: diary.create, mood.log
+  ✓ Ack responses with requestId
+  ✓ Broadcast events to user's connections
+
+M6 - STATISTICS [COMPLETE]
+  ✓ Overview stats (completion rate, mood avg, etc.)
+  ✓ Todos timeseries (daily buckets)
+  ✓ Mood timeseries
+  ✓ Heatmap data for year-in-pixels
+  ✓ Recent activity feed
+
+M7 - SEED DATA [COMPLETE]
+  ✓ Demo user creation
+  ✓ 90 days of sample todos
+  ✓ Sample diary entries
+  ✓ Sample mood logs
+  ✓ Realistic distribution
+
+M8 - FRONTEND [COMPLETE]
+  ✓ React + Vite + TypeScript
+  ✓ Login page (email + code modes)
+  ✓ Dashboard with KPIs and charts
+  ✓ Todos page with filters
+  ✓ Diary page with search
+  ✓ Settings page with export
+  ✓ Real-time WebSocket integration
+  ✓ Responsive design with Tailwind
+
+M9 - N8N INTEGRATION [IN PROGRESS]
+  - n8n workflow documentation
+  - Example workflow JSON
+  - Message parsing patterns
+  - Error handling guidance
+
+M10 - DEPLOYMENT [PENDING]
+  - Docker build for arm64
+  - Raspberry Pi setup guide
+  - nginx configuration
+  - Backup/restore scripts
+  - Systemd service files
+
+FUTURE ENHANCEMENTS (v2+)
+-------------------------
+- End-to-end encryption for diary entries
+- Voice message transcription
+- AI-powered insights and suggestions
+- Calendar integration
+- Habit tracking
+- Photo attachments
+- Multi-language support
+
+SECURITY CHECKLIST
+------------------
+✓ No credentials in code
+✓ Environment variables for secrets
+✓ User isolation in all queries
+✓ Input validation with Zod
+✓ JWT with short expiry + refresh tokens
+- [ ] Rate limiting (TODO)
+- [ ] Request logging (TODO)
+- [ ] Security headers (TODO)
+
+PERFORMANCE TARGETS
+-------------------
+- API response time: < 100ms p95
+- Dashboard load time: < 2s
+- Memory usage: < 512MB (for Pi)
+- Database size: handle 100k+ entries
+
+CONTACT
+-------
+Project: Kalix Dear Diary
+Author: Kalix Team

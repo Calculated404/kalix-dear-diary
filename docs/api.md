@@ -14,8 +14,10 @@ Authorization: Bearer <access_token>
 ### 2. Service Token (for n8n/automation)
 ```
 X-Service-Token: <service_token>
-X-User-Id: <user_uuid>
+X-User-Id: <user_uuid>        # Required for user-scoped endpoints
 ```
+
+**Note:** The `/auth/telegram/upsert` endpoint only requires `X-Service-Token` (no `X-User-Id`), as it's used to create/lookup users.
 
 ## Endpoints
 
@@ -85,7 +87,15 @@ Revoke all refresh tokens.
 **Headers:** Bearer token required
 
 #### POST /auth/telegram/upsert
-Create or update user by Telegram ID. **Service token required.**
+Create or update user by Telegram ID. **Service token required, NO X-User-Id needed.**
+
+This endpoint is used to create users or lookup existing ones by Telegram ID.
+Returns the user.id which should be used for subsequent `X-User-Id` headers.
+
+**Headers:**
+```
+X-Service-Token: <token>
+```
 
 **Request:**
 ```json
@@ -96,8 +106,44 @@ Create or update user by Telegram ID. **Service token required.**
 }
 ```
 
+**Response:**
+```json
+{
+  "success": true,
+  "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "telegramUserId": 123456789,
+    "displayName": "John Doe",
+    "timezone": "Europe/Berlin"
+  }
+}
+```
+
 #### GET /auth/me
 Get current user profile.
+
+#### PATCH /auth/me
+Update current user profile (timezone, displayName).
+
+**Request:**
+```json
+{
+  "timezone": "America/New_York",
+  "displayName": "New Name"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "user": {
+    "id": "uuid",
+    "displayName": "New Name",
+    "timezone": "America/New_York"
+  }
+}
+```
 
 ---
 
@@ -290,14 +336,27 @@ Connect to: `ws://localhost:3001/ws`
 
 ### Authentication
 
-After connecting, send auth message within 10 seconds:
+After connecting, send auth message within 10 seconds.
 
+#### Method 1: JWT (for web frontend)
 ```json
 {
   "type": "auth",
   "token": "<jwt_access_token>"
 }
 ```
+
+#### Method 2: Service Token (for n8n/automation)
+```json
+{
+  "type": "auth",
+  "token": "<SERVICE_TOKEN>",
+  "userId": "<user_uuid>"
+}
+```
+
+**Important:** For service token auth, `userId` is REQUIRED and must be a valid user UUID.
+Get the userId from `/auth/telegram/upsert` first.
 
 **Success response:**
 ```json

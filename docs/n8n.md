@@ -2,9 +2,25 @@
 
 This guide explains how to integrate Kalix Dear Diary with n8n workflows for Telegram automation.
 
-## Overview
+## Architecture Overview
 
-The typical flow is:
+```
+n8n (octopus) ──────────────────────────────────────────────────────────
+   │
+   ├── Telegram Bot API (receives messages)
+   ├── Gmail API (optional: email triggers)
+   ├── Google Calendar API (optional: calendar sync)
+   │
+   └── Kalix Backend API ◄── n8n calls the backend (never the reverse)
+                              Backend is a passive datastore only
+```
+
+**Key principle:** n8n holds all external credentials (Google, Telegram). The backend NEVER calls external services.
+
+See [integration-boundaries.md](./integration-boundaries.md) for full architecture details.
+
+## Flow Overview
+
 1. User sends message to Telegram bot
 2. n8n receives message via Telegram Trigger
 3. n8n parses intent and extracts data
@@ -13,13 +29,23 @@ The typical flow is:
 
 ## Authentication
 
-n8n uses a **Service Token** for authentication:
+n8n uses a **Service Token** for authentication.
 
-1. Set `SERVICE_TOKEN` in your `.env` file
-2. Store it in n8n's credentials as "Header Auth"
-3. Include headers in every request:
-   - `X-Service-Token: <your_service_token>`
-   - `X-User-Id: <user_uuid>`
+### Setup
+
+1. Set `SERVICE_TOKEN` in your backend `.env` file
+2. Store the same token in n8n's credentials
+
+### Header Requirements
+
+| Endpoint | X-Service-Token | X-User-Id |
+|----------|-----------------|-----------|
+| `/api/auth/telegram/upsert` | Required | NOT needed (returns user.id) |
+| `/api/todos/*` | Required | Required |
+| `/api/diary/*` | Required | Required |
+| `/api/moods/*` | Required | Required |
+| `/api/stats/*` | Required | Required |
+| WebSocket `/ws` | Via auth message | Via auth message |
 
 ## User Management
 
@@ -173,25 +199,49 @@ Content-Type: application/json
 
 ## WebSocket Integration (Preferred)
 
-For better performance, use WebSocket instead of REST.
+For better performance and real-time capabilities, use WebSocket instead of REST.
 
 ### n8n WebSocket Setup
 
 1. Use the "WebSocket" node (or HTTP Request with WebSocket)
 2. Connect to: `ws://your-api:3001/ws`
-3. Send auth message first
+3. Send auth message first (with service token + userId)
 4. Send command messages
 
-### Authentication
+### Authentication (Service Token)
+
+For n8n/automation, authenticate with service token AND userId:
 
 ```json
 {
   "type": "auth",
-  "token": "<service_token>"
+  "token": "<SERVICE_TOKEN>",
+  "userId": "<user_uuid_from_upsert>"
 }
 ```
 
-Note: WebSocket currently requires JWT, not service token. For n8n, use REST API.
+**Important:** 
+- The `userId` is REQUIRED for service token auth
+- Get the userId from the `/api/auth/telegram/upsert` response first
+- Server responds with `{"type": "auth.ok"}` on success
+
+### Complete Flow Example
+
+```
+1. Upsert user via REST:
+   POST /api/auth/telegram/upsert → returns { user: { id: "abc-123" } }
+
+2. Connect WebSocket:
+   ws://api:3001/ws
+
+3. Authenticate:
+   Send: { "type": "auth", "token": "SERVICE_TOKEN", "userId": "abc-123" }
+   Recv: { "type": "auth.ok" }
+
+4. Send commands:
+   Send: { "type": "todo.create", "requestId": "req-1", "data": {...} }
+   Recv: { "type": "ack", "requestId": "req-1", "ok": true, "data": {...} }
+```
 
 ### Command Examples
 
@@ -207,6 +257,27 @@ Note: WebSocket currently requires JWT, not service token. For n8n, use REST API
 }
 ```
 
+**Complete Todo:**
+```json
+{
+  "type": "todo.complete",
+  "requestId": "unique-id",
+  "todoId": "<todo_uuid>"
+}
+```
+
+**Create Diary Entry:**
+```json
+{
+  "type": "diary.create",
+  "requestId": "unique-id",
+  "data": {
+    "rawText": "Today I learned...",
+    "source": "telegram"
+  }
+}
+```
+
 **Log Mood:**
 ```json
 {
@@ -217,6 +288,28 @@ Note: WebSocket currently requires JWT, not service token. For n8n, use REST API
     "note": "Feeling good",
     "source": "telegram"
   }
+}
+```
+
+### Response Format
+
+**Success:**
+```json
+{
+  "type": "ack",
+  "requestId": "unique-id",
+  "ok": true,
+  "data": { /* created/updated entity */ }
+}
+```
+
+**Error:**
+```json
+{
+  "type": "ack",
+  "requestId": "unique-id",
+  "ok": false,
+  "error": { "code": "NOT_FOUND", "message": "Todo not found" }
 }
 ```
 

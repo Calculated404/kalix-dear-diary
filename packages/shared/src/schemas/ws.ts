@@ -8,9 +8,12 @@ import { createMoodLogSchema } from './mood.js';
 // ============================================
 
 // Auth messages
+// For JWT auth: token is the JWT, userId is omitted
+// For service token auth: token is the SERVICE_TOKEN, userId is REQUIRED
 export const wsAuthMessageSchema = z.object({
   type: z.literal('auth'),
   token: z.string(),
+  userId: z.string().uuid().optional(), // Required for service token auth, ignored for JWT
 });
 
 export const wsAuthOkMessageSchema = z.object({

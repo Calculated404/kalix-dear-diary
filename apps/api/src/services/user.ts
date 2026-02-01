@@ -169,6 +169,13 @@ export class UserService {
     );
   }
 
+  async updateDisplayName(userId: string, displayName: string | null): Promise<void> {
+    await this.pool.query(
+      `UPDATE dear_diary.users SET display_name = $1 WHERE id = $2`,
+      [displayName, userId]
+    );
+  }
+
   private mapRow(row: Record<string, unknown>): DbUser {
     return {
       id: row.id as string,

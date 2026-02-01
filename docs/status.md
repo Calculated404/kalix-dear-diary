@@ -1,6 +1,6 @@
 # Project Status
 
-## Current Phase: M0-M8 Complete (Core Implementation)
+## Current Phase: M0-M8 Complete + Integration Boundary Fixes
 
 ### Completed Milestones
 
@@ -13,21 +13,32 @@
 - [x] **M6**: Stats endpoints (week/month/year)
 - [x] **M7**: Seed scripts + dummy dataset (90 days of data)
 - [x] **M8**: React frontend (login + dashboard + charts + pages)
+- [x] **Integration Boundary Fixes**: Proper auth for n8n, WebSocket service token support
 
 ### In Progress
 
 - [ ] **M9**: Real-time updates integration test + n8n example workflow
 - [ ] **M10**: Deployment docs for Raspberry Pi
 
+### Recent Fixes (Integration Boundaries)
+
+1. **`/api/auth/telegram/upsert`** - Now only requires `X-Service-Token`, NOT `X-User-Id`
+2. **WebSocket** - Now supports service token auth with `userId` field
+3. **`PATCH /api/auth/me`** - Added endpoint for updating timezone/displayName
+4. **Guardrail script** - Added `pnpm audit:boundaries` to prevent regression
+5. **Documentation** - Added `docs/integration-boundaries.md`
+
 ### Next Actions
 
-1. Install dependencies and verify build (`pnpm install && pnpm build`)
-2. Start Docker Postgres and run migrations
-3. Seed demo data and verify API endpoints
-4. Test WebSocket real-time updates
-5. Create n8n workflow export
+1. Run `pnpm audit:boundaries` (passes)
+2. Test REST upsert without X-User-Id
+3. Test WebSocket with service token + userId
+4. Test Settings page timezone update
 
 ## Architecture Decisions
+
+### Decision: Backend as Passive Datastore
+**Rationale:** The backend NEVER calls external services (Google, n8n, Telegram). n8n holds all external credentials and calls the backend. See `docs/integration-boundaries.md`.
 
 ### Decision: Fastify over Express
 **Rationale:** Better TypeScript support, built-in validation hooks, excellent WebSocket plugin.
@@ -56,6 +67,7 @@ None yet - initial schema.
 
 - [ ] Unit tests for services
 - [ ] Integration tests for API endpoints
+- [x] Boundary audit script (`pnpm audit:boundaries`)
 - [ ] WebSocket connection tests
 - [ ] User isolation tests
 
@@ -64,3 +76,4 @@ None yet - initial schema.
 - Using `date-fns` for date formatting in frontend (lighter than moment)
 - Using `recharts` for charts (good React integration)
 - Avoiding heavy dependencies for Raspberry Pi compatibility
+- NO Google APIs, axios, or outbound HTTP clients in backend

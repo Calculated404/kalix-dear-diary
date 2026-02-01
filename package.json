@@ -18,7 +18,8 @@
     "db:smoke": "pnpm --filter @kalix/db smoke",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f"
+    "docker:logs": "docker-compose logs -f",
+    "audit:boundaries": "bash scripts/audit-boundaries.sh"
   },
   "engines": {
     "node": ">=20.0.0",

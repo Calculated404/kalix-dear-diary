@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
-import { loginRequestSchema, upsertTelegramUserSchema } from '@kalix/shared';
+import { loginRequestSchema, upsertTelegramUserSchema, updateUserSchema } from '@kalix/shared';
 import { UserService } from '../services/user.js';
-import { requireServiceToken, authenticate } from '../middleware/auth.js';
+import { requireServiceTokenOnly, authenticate } from '../middleware/auth.js';
 import crypto from 'crypto';
 
 export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
@@ -189,10 +189,12 @@ export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
   });
 
   // Upsert user by Telegram ID (service token only - used by n8n)
+  // NOTE: This endpoint does NOT require X-User-Id since the user may not exist yet.
+  // n8n uses this to create/lookup users, then uses the returned user.id for subsequent calls.
   fastify.post('/telegram/upsert', {
-    preHandler: requireServiceToken,
+    preHandler: requireServiceTokenOnly,
     schema: {
-      description: 'Create or update user by Telegram ID (service token required)',
+      description: 'Create or update user by Telegram ID (service token required, NO X-User-Id needed)',
       tags: ['Auth'],
       security: [{ serviceToken: [] }],
       body: {
@@ -202,6 +204,23 @@ export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
           telegramUserId: { type: 'number' },
           username: { type: 'string' },
           displayName: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            user: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', description: 'Use this ID for X-User-Id header in subsequent calls' },
+                telegramUserId: { type: 'number' },
+                displayName: { type: 'string', nullable: true },
+                timezone: { type: 'string' },
+              },
+            },
+          },
         },
       },
     },
@@ -254,6 +273,77 @@ export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
       timezone: user.timezone,
       createdAt: user.createdAt,
       lastLoginAt: user.lastLoginAt,
+    });
+  });
+
+  // Update current user profile (timezone, displayName)
+  fastify.patch('/me', {
+    preHandler: authenticate,
+    schema: {
+      description: 'Update current user profile (timezone, displayName)',
+      tags: ['Auth'],
+      security: [{ bearerAuth: [] }],
+      body: {
+        type: 'object',
+        properties: {
+          timezone: { type: 'string' },
+          displayName: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            user: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                displayName: { type: 'string', nullable: true },
+                timezone: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
+  }, async (request, reply) => {
+    if (!request.authContext) {
+      return reply.status(401).send({ error: 'unauthorized' });
+    }
+
+    const parseResult = updateUserSchema.safeParse(request.body);
+    if (!parseResult.success) {
+      return reply.status(400).send({
+        error: 'validation_error',
+        message: parseResult.error.message,
+      });
+    }
+
+    const { timezone, displayName } = parseResult.data;
+    const userId = request.authContext.userId;
+
+    // Update fields if provided
+    if (timezone) {
+      await userService.updateTimezone(userId, timezone);
+    }
+    if (displayName !== undefined) {
+      await userService.updateDisplayName(userId, displayName);
+    }
+
+    // Fetch updated user
+    const user = await userService.getById(userId);
+    if (!user) {
+      return reply.status(404).send({ error: 'user_not_found' });
+    }
+
+    return reply.send({
+      success: true,
+      user: {
+        id: user.id,
+        displayName: user.displayName,
+        timezone: user.timezone,
+      },
     });
   });
 };

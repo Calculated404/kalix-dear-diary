@@ -70,16 +70,38 @@ export async function wsHandler(
         return;
       }
 
-      const { token } = authResult.data;
+      const { token, userId: providedUserId } = authResult.data;
 
       // Check if it's a service token
       const serviceToken = process.env['SERVICE_TOKEN'];
       if (serviceToken && token === serviceToken) {
-        // Service token auth - not supported for WS (would need user_id somehow)
-        wsConnectionManager.send(socket, {
-          type: 'auth.error',
-          message: 'Service token not supported for WebSocket. Use JWT.',
-        });
+        // Service token auth - requires userId to be provided
+        if (!providedUserId) {
+          wsConnectionManager.send(socket, {
+            type: 'auth.error',
+            message: 'Service token auth requires userId field',
+          });
+          return;
+        }
+
+        // Verify user exists
+        const user = await userService.getById(providedUserId);
+        if (!user) {
+          wsConnectionManager.send(socket, {
+            type: 'auth.error',
+            message: 'User not found for provided userId',
+          });
+          return;
+        }
+
+        // Service token authentication successful
+        clearTimeout(authTimeout);
+        authenticated = true;
+        userId = providedUserId;
+        wsConnectionManager.addConnection(socket, userId);
+
+        wsConnectionManager.send(socket, { type: 'auth.ok' });
+        console.log(`WS: Service token auth successful for user ${userId}`);
         return;
       }
 
@@ -105,7 +127,7 @@ export async function wsHandler(
           return;
         }
 
-        // Authentication successful
+        // JWT authentication successful
         clearTimeout(authTimeout);
         authenticated = true;
         userId = payload.sub;

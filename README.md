@@ -10,6 +10,34 @@ A personal diary and task management system with Telegram integration, n8n autom
 - **Real-time Updates**: WebSocket support for live data synchronization
 - **Multi-user Support**: Fully isolated user data with proper authentication
 
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         n8n                                  │
+│  Telegram Bot │ Gmail API │ Calendar API                    │
+│  (n8n holds all external service credentials)               │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ REST + WebSocket
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Backend API                               │
+│  • Passive datastore only                                    │
+│  • NEVER calls external services                             │
+│  • Stores: users, todos, diary, moods                        │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ REST + WebSocket
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Web Frontend                              │
+│  Dashboard, charts, real-time updates                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Key principle:** The backend is a "dumb brain" - it stores data and serves stats. n8n is the "octopus" that talks to Telegram, Google, etc.
+
+See [docs/integration-boundaries.md](docs/integration-boundaries.md) for details.
+
 ## Tech Stack
 
 - **Backend**: Node.js, Fastify, TypeScript, PostgreSQL

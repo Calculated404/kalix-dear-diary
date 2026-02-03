@@ -6,8 +6,24 @@ Kalix Dear Diary uses PostgreSQL with the `dear_diary` schema.
 
 **Connection String Format:**
 ```
-postgresql://user:password@host:5433/database
+postgresql://kalix:kalix@host:5433/kalix_diary
 ```
+(Default user/password: `kalix` / `kalix`. From host use port 5433 if using Docker.)
+
+### Resetting the Docker database
+
+If you change `POSTGRES_USER` or `POSTGRES_PASSWORD` in docker-compose or `.env`, the running Postgres container **does not** update: it was initialized with the credentials from the first run. To apply new credentials you must remove the volume and start fresh:
+
+```bash
+docker compose down
+docker volume rm kalix-dear-diary_postgres_data
+docker compose up -d postgres
+# Wait a few seconds, then run migrations
+pnpm db:migrate
+pnpm db:seed
+```
+
+Then start the rest: `docker compose up -d`.
 
 ## Schema
 

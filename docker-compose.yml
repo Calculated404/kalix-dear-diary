@@ -6,7 +6,7 @@ services:
     container_name: kalix-postgres
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "5433:5433"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-kalix}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kalix_secret}

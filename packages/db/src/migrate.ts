@@ -33,8 +33,16 @@ async function migrate() {
     
     console.log('✓ Schema migration completed');
 
-  } catch (err) {
-    console.error('Migration error:', err);
+  } catch (err: unknown) {
+    const pgErr = err as { code?: string; message?: string };
+    if (pgErr?.code === '3D000') {
+      console.error('Migration error: database does not exist.');
+      console.error('Check your .env: DATABASE_URL must use an existing database.');
+      console.error('This project expects the database name "kalix_diary" (see .env.example).');
+      console.error('If using docker-compose, the DB is created automatically. From host use port from POSTGRES_PORT (e.g. localhost:5433).');
+    } else {
+      console.error('Migration error:', err);
+    }
     process.exit(1);
   } finally {
     await pool.end();

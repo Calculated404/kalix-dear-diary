@@ -37,9 +37,10 @@ async function migrate() {
     const pgErr = err as { code?: string; message?: string };
     if (pgErr?.code === '3D000') {
       console.error('Migration error: database does not exist.');
-      console.error('Check your .env: DATABASE_URL must use an existing database.');
-      console.error('This project expects the database name "kalix_diary" (see .env.example).');
-      console.error('If using docker-compose, the DB is created automatically. From host use port from POSTGRES_PORT (e.g. localhost:5433).');
+      console.error('Check your .env: DATABASE_URL must use an existing database and the correct port.');
+      console.error('  - Database name should be "kalix_diary" (see .env.example).');
+      console.error('  - Use the same port you use with psql (e.g. if you use psql -p 5432, set DATABASE_URL with :5432/).');
+      console.error('  - If using docker-compose, use POSTGRES_PORT in the URL (e.g. localhost:5433).');
     } else {
       console.error('Migration error:', err);
     }

@@ -30,12 +30,10 @@ export interface ServerOptions {
 export async function buildServer(options: ServerOptions) {
   const { pool } = options;
 
+  // Use plain pino (no pino-pretty) so the server runs in Docker where pino-pretty is not installed
   const server = Fastify({
     logger: {
       level: process.env['NODE_ENV'] === 'production' ? 'info' : 'debug',
-      transport: process.env['NODE_ENV'] !== 'production'
-        ? { target: 'pino-pretty', options: { colorize: true } }
-        : undefined,
     },
   });
 

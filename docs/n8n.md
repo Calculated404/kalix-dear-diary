@@ -204,7 +204,7 @@ For better performance and real-time capabilities, use WebSocket instead of REST
 ### n8n WebSocket Setup
 
 1. Use the "WebSocket" node (or HTTP Request with WebSocket)
-2. Connect to: `ws://your-api:3001/ws`
+2. Connect to: `ws://your-api:3010/ws`
 3. Send auth message first (with service token + userId)
 4. Send command messages
 

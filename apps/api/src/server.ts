@@ -46,7 +46,7 @@ export async function buildServer(options: ServerOptions) {
   // CORS
   await server.register(cors, {
     origin: process.env['NODE_ENV'] === 'production'
-      ? [process.env['FRONTEND_URL'] || 'http://localhost:3000']
+      ? [process.env['FRONTEND_URL'] || 'http://localhost:3011']
       : true,
     credentials: true,
   });
@@ -76,7 +76,7 @@ export async function buildServer(options: ServerOptions) {
         version: '1.0.0',
       },
       servers: [
-        { url: 'http://localhost:3001', description: 'Development' },
+        { url: 'http://localhost:3010', description: 'Development' },
       ],
       components: {
         securitySchemes: {

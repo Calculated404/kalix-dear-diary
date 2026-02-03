@@ -1,6 +1,6 @@
 # API Documentation
 
-Base URL: `http://localhost:3001/api`
+Base URL: `http://localhost:3010/api`
 
 ## Authentication
 
@@ -332,7 +332,7 @@ Recent activity feed.
 
 ### Connection
 
-Connect to: `ws://localhost:3001/ws`
+Connect to: `ws://localhost:3010/ws`
 
 ### Authentication
 

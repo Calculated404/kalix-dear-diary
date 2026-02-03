@@ -27,7 +27,7 @@ services:
     container_name: kalix-api
     restart: unless-stopped
     ports:
-      - "${API_PORT:-3001}:3001"
+      - "${API_PORT:-3010}:3001"
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-kalix}:${POSTGRES_PASSWORD:-kalix_secret}@postgres:5432/${POSTGRES_DB:-kalix_diary}
       JWT_SECRET: ${JWT_SECRET}
@@ -51,7 +51,7 @@ services:
     container_name: kalix-web
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "${WEB_PORT:-3011}:80"
     depends_on:
       - api
 

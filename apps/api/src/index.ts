@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { buildServer } from './server.js';
 import { createPool } from './db/pool.js';
 
-const PORT = parseInt(process.env['API_PORT'] || '3001', 10);
+const PORT = parseInt(process.env['API_PORT'] || '3010', 10);
 const HOST = process.env['API_HOST'] || '0.0.0.0';
 
 async function main() {

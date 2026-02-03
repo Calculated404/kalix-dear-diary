@@ -98,9 +98,9 @@ kalix-dear-diary/
    ```
 
    This starts:
-   - API server at http://localhost:3001
-   - Web app at http://localhost:3000
-   - API docs at http://localhost:3001/docs
+   - API server at http://localhost:3010
+   - Web app at http://localhost:3011
+   - API docs at http://localhost:3010/docs
 
 ### Demo Credentials
 
@@ -128,7 +128,7 @@ docker-compose down
 | `DATABASE_URL` | PostgreSQL connection string | - |
 | `JWT_SECRET` | Secret for JWT signing | - |
 | `SERVICE_TOKEN` | Token for n8n/service auth | - |
-| `API_PORT` | API server port | 3001 |
+| `API_PORT` | API server port | 3010 |
 | `DEFAULT_TIMEZONE` | Default user timezone | Europe/Berlin |
 
 ## API Documentation

@@ -6,7 +6,7 @@ Kalix Dear Diary uses PostgreSQL with the `dear_diary` schema.
 
 **Connection String Format:**
 ```
-postgresql://user:password@host:5432/database
+postgresql://user:password@host:5433/database
 ```
 
 ## Schema
@@ -14,6 +14,9 @@ postgresql://user:password@host:5432/database
 ### Users
 
 ```sql
+CREATE SCHEMA IF NOT EXISTS dear_diary;
+
+
 CREATE TABLE dear_diary.users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     telegram_user_id BIGINT UNIQUE,

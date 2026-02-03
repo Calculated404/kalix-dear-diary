@@ -1,11 +1,71 @@
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
-import { loginRequestSchema, upsertTelegramUserSchema, updateUserSchema } from '@kalix/shared';
+import { loginRequestSchema, registerRequestSchema, upsertTelegramUserSchema, updateUserSchema } from '@kalix/shared';
 import { UserService } from '../services/user.js';
 import { requireServiceTokenOnly, authenticate } from '../middleware/auth.js';
 import crypto from 'crypto';
 
 export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   const userService = new UserService(fastify.pool);
+
+  // Register endpoint (create new user with email/password)
+  fastify.post('/register', {
+    schema: {
+      description: 'Create a new user with email and password',
+      tags: ['Auth'],
+      body: {
+        type: 'object',
+        required: ['email', 'password'],
+        properties: {
+          email: { type: 'string', format: 'email' },
+          password: { type: 'string', minLength: 8 },
+          displayName: { type: 'string' },
+        },
+      },
+      response: {
+        201: {
+          type: 'object',
+          properties: {
+            message: { type: 'string' },
+            user: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                email: { type: 'string' },
+                displayName: { type: 'string', nullable: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  }, async (request, reply) => {
+    const parseResult = registerRequestSchema.safeParse(request.body);
+    if (!parseResult.success) {
+      return reply.status(400).send({
+        error: 'validation_error',
+        message: parseResult.error.message,
+      });
+    }
+
+    const { email, password, displayName } = parseResult.data;
+    const user = await userService.createByEmail(email, password, displayName);
+
+    if (!user) {
+      return reply.status(409).send({
+        error: 'email_exists',
+        message: 'An account with this email already exists',
+      });
+    }
+
+    return reply.status(201).send({
+      message: 'Account created. You can now log in.',
+      user: {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+      },
+    });
+  });
 
   // Login endpoint (email/password or login code)
   fastify.post('/login', {

@@ -20,6 +20,12 @@ export const loginResponseSchema = z.object({
   }),
 });
 
+export const registerRequestSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8).max(255),
+  displayName: z.string().max(255).optional(),
+});
+
 export const refreshTokenRequestSchema = z.object({
   refreshToken: z.string(),
 });

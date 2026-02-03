@@ -104,9 +104,17 @@ kalix-dear-diary/
 
 ### Demo Credentials
 
-After seeding, you can login with:
-- **Email**: demo@kalix.local
-- **Password**: demo123
+After running `pnpm db:seed`, you can sign in with:
+- **Email**: demo@kalix.local  
+- **Password**: demo123  
+
+(You cannot sign in with a Telegram ID alone from the web—use email/password or a 6-digit login code from the Telegram bot.)
+
+### Creating Users
+
+- **Web:** Use the **Create Account** tab on the login page (email + password, min 8 characters).
+- **Demo user:** Run `pnpm db:seed` to create the demo user (demo@kalix.local / demo123).
+- **Telegram/n8n:** Use `POST /api/auth/telegram/upsert` with the service token to create or link users by Telegram ID.
 
 ### Production with Docker
 

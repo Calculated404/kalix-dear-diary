@@ -27,7 +27,7 @@ services:
     ports:
       - "${API_PORT:-3010}:3001"
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-kalix}:${POSTGRES_PASSWORD:-kalix}@postgres:5433/${POSTGRES_DB:-kalix_diary}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-kalix}:${POSTGRES_PASSWORD:-kalix}@postgres:5432/${POSTGRES_DB:-kalix_diary}
       JWT_SECRET: ${JWT_SECRET}
       SERVICE_TOKEN: ${SERVICE_TOKEN}
       NODE_ENV: ${NODE_ENV:-production}

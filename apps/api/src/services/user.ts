@@ -58,6 +58,28 @@ export class UserService {
     return this.mapRow(result.rows[0]);
   }
 
+  async createByEmail(
+    email: string,
+    password: string,
+    displayName?: string
+  ): Promise<DbUser | null> {
+    const existing = await this.getByEmail(email);
+    if (existing) return null;
+
+    const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+    const timezone = process.env['DEFAULT_TIMEZONE'] || 'Europe/Berlin';
+
+    const result = await this.pool.query(
+      `INSERT INTO dear_diary.users (email, password_hash, display_name, timezone)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, telegram_user_id, username, email, password_hash,
+                 display_name, timezone, created_at, updated_at, last_login_at, is_active`,
+      [email, passwordHash, displayName ?? null, timezone]
+    );
+
+    return this.mapRow(result.rows[0]);
+  }
+
   async upsertByTelegramId(data: UpsertTelegramUser): Promise<DbUser> {
     const result = await this.pool.query(
       `INSERT INTO dear_diary.users (telegram_user_id, username, display_name, timezone)
